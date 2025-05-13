@@ -128,7 +128,7 @@ This project implements a task management system with the following features:
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/username/sit323-737-2024-t1-prac7p.git
+   git clone https://github.com/red-aero/sit323-737-2024-t1-prac7p.git
    cd sit323-737-2024-t1-prac7p
    ```
 
