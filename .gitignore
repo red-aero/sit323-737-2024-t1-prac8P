@@ -1,0 +1,68 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+
+# Logs
+logs/
+*.log
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+.directory
+Desktop.ini
+
+# IDE and Editor folders
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.classpath
+.factorypath
+
+# Kubernetes secrets
+*secret*.yaml
+*secrets*.yaml
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+tmp/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Testing
+coverage/
+.nyc_output/
+
+# Miscellaneous
+.git/
+.github/
+.gitlab/
+.gitattributes
+.editorconfig
+.eslintcache
+.stylelintcache

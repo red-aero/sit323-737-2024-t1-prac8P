@@ -1,73 +1,77 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloud-native-app
+  name: task-management-app
   labels:
-    app: cloud-native-app
+    app: task-management-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: cloud-native-app
+      app: task-management-app
   template:
     metadata:
       labels:
-        app: cloud-native-app
+        app: task-management-app
     spec:
       containers:
-      - name: cloud-native-app
-        image: cloud-native-app:latest
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 3000
-        env:
-        - name: PORT
-          value: "3000"
-        - name: MONGO_URI
-          value: "mongodb://$(MONGO_ROOT_USERNAME):$(MONGO_ROOT_PASSWORD)@mongodb:27017/$(DATABASE_NAME)?authSource=admin"
-        - name: MONGO_ROOT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: mongo-root-username
-        - name: MONGO_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mongodb-secret
-              key: mongo-root-password
-        - name: DATABASE_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: mongodb-configmap
-              key: database-name
-        resources:
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-          requests:
-            cpu: "200m"
-            memory: "256Mi"
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 3000
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3000
-          initialDelaySeconds: 15
-          periodSeconds: 20
+        - name: task-management-app
+          image: node:18-slim
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p /app/public
+              cp /config/server.js /app/
+              cp /config/package.json /app/
+              cp /config/index.html /app/public/
+              cp /config/styles.css /app/public/
+              cp /config/app.js /app/public/
+              cd /app
+              npm install
+              node server.js
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: config-volume
+          configMap:
+            name: task-management-app-files
+
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: cloud-native-app
+  name: task-management-app-service
 spec:
   selector:
-    app: cloud-native-app
+    app: task-management-app
   ports:
-  - port: 80
-    targetPort: 3000
-  type: LoadBalancer 
+    - port: 80
+      targetPort: 3000
+  type: LoadBalancer

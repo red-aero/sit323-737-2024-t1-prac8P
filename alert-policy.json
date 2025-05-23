@@ -1,0 +1,33 @@
+{
+  "displayName": "Task Management App - High CPU Usage",
+  "documentation": {
+    "content": "This alert fires when the CPU usage of the task-management-app container exceeds 80% for 5 minutes.",
+    "mimeType": "text/markdown"
+  },
+  "conditions": [
+    {
+      "displayName": "CPU Usage > 80%",
+      "conditionThreshold": {
+        "filter": "metric.type=\"kubernetes.io/container/cpu/core_usage_time\" resource.type=\"k8s_container\" resource.label.\"container_name\"=\"task-management-app\"",
+        "aggregations": [
+          {
+            "alignmentPeriod": "300s",
+            "perSeriesAligner": "ALIGN_RATE"
+          }
+        ],
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0.8,
+        "duration": "0s",
+        "trigger": {
+          "count": 1
+        }
+      }
+    }
+  ],
+  "alertStrategy": {
+    "autoClose": "604800s"
+  },
+  "combiner": "OR",
+  "enabled": true,
+  "notificationChannels": []
+}

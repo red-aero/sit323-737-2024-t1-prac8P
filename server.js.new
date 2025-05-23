@@ -1,0 +1,137 @@
+const express = require('express');
+const { v4: uuidv4 } = require('uuid');
+const path = require('path');
+const morgan = require('morgan');
+
+// Initialize Express app
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(morgan('dev'));
+
+// In-memory storage for tasks
+const tasks = [
+  {
+    _id: uuidv4(),
+    title: "Task 1: Kubernetes Cluster Setup",
+    description: "Set up a Kubernetes cluster using minikube or Docker Desktop for local development.",
+    completed: true,
+    createdAt: new Date(new Date().setDate(new Date().getDate() - 5))
+  },
+  {
+    _id: uuidv4(),
+    title: "Task 2: Containerize Application",
+    description: "Create a Dockerfile and containerize the application.",
+    completed: true,
+    createdAt: new Date(new Date().setDate(new Date().getDate() - 4))
+  },
+  {
+    _id: uuidv4(),
+    title: "Task 3: Create Kubernetes Manifests",
+    description: "Create Kubernetes deployment, service, and other necessary manifests.",
+    completed: false,
+    createdAt: new Date(new Date().setDate(new Date().getDate() - 3))
+  },
+  {
+    _id: uuidv4(),
+    title: "Task 4: Deploy to GKE",
+    description: "Deploy the application to Google Kubernetes Engine.",
+    completed: false,
+    createdAt: new Date(new Date().setDate(new Date().getDate() - 2))
+  },
+  {
+    _id: uuidv4(),
+    title: "Task 5: Set Up Monitoring",
+    description: "Set up monitoring for the application using Google Cloud Monitoring.",
+    completed: false,
+    createdAt: new Date(new Date().setDate(new Date().getDate() - 1))
+  }
+];
+
+// Routes
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+// API Routes
+app.get('/api/tasks', (req, res) => {
+  res.json(tasks);
+});
+
+app.get('/api/tasks/:id', (req, res) => {
+  const task = tasks.find(t => t._id === req.params.id);
+  if (!task) {
+    return res.status(404).json({ message: 'Task not found' });
+  }
+  res.json(task);
+});
+
+app.post('/api/tasks', (req, res) => {
+  const { title, description } = req.body;
+  
+  if (!title) {
+    return res.status(400).json({ message: 'Title is required' });
+  }
+  
+  const newTask = {
+    _id: uuidv4(),
+    title,
+    description: description || '',
+    completed: false,
+    createdAt: new Date()
+  };
+  
+  tasks.push(newTask);
+  res.status(201).json(newTask);
+});
+
+app.put('/api/tasks/:id', (req, res) => {
+  const taskIndex = tasks.findIndex(t => t._id === req.params.id);
+  
+  if (taskIndex === -1) {
+    return res.status(404).json({ message: 'Task not found' });
+  }
+  
+  const { title, description, completed } = req.body;
+  
+  if (title !== undefined) tasks[taskIndex].title = title;
+  if (description !== undefined) tasks[taskIndex].description = description;
+  if (completed !== undefined) tasks[taskIndex].completed = completed;
+  
+  res.json(tasks[taskIndex]);
+});
+
+app.delete('/api/tasks/:id', (req, res) => {
+  const taskIndex = tasks.findIndex(t => t._id === req.params.id);
+  
+  if (taskIndex === -1) {
+    return res.status(404).json({ message: 'Task not found' });
+  }
+  
+  const deletedTask = tasks.splice(taskIndex, 1)[0];
+  res.json(deletedTask);
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'production' ? {} : err,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Start server directly (no MongoDB connection needed)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
+});

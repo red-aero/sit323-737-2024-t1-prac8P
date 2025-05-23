@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:18-slim
 
 WORKDIR /app
 
@@ -14,6 +14,11 @@ COPY . .
 # Ensure the public directory and its contents have correct permissions
 RUN chmod -R 755 /app/public
 
-EXPOSE 3000
+# Expose the port the app runs on
+EXPOSE 8080
 
-CMD ["node", "server.js"] 
+# Define environment variable for GCP
+ENV PORT=8080
+
+# Start the application
+CMD ["node", "server.js"]
